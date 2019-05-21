@@ -11,18 +11,13 @@ function Invoke-Compile
     [CmdletBinding()]
     Param
     (
-
+      [String]$Path
     )
-    begin
-    {
-
-    }
-    process
-    {
-
-    }
-    end
-    {
-
-    }
+      Set-Location -Path ($Path -replace '\\[a-zA-Z0-9]*\.ps1$')
+      $launchFile = Get-Content $Path
+      $launchFile = $launchFile |% { 
+        #Write-Verbose "Starting line $_"
+        $_ | Get-FileMarks 
+      }
+      $launchFile
 }

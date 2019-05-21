@@ -7,15 +7,19 @@ function Get-FileMarks
     [CmdletBinding()]
     Param
     (
-      [String]$Path
+      [Parameter(ValueFromPipeline)][String]$InputLine
     )
     begin
     {
-      Get-ModuleData ($Path.Parent)
+      
     }
     process
     {
-
+      switch -Regex ($InputLine) {
+        '.*Get-Command.*' { $InputLine | Set-FileMarks -Type Command; Break}
+        '.*Get-Content.*' { $InputLine | Set-FileMarks -Type Text; Break}
+        default {$InputLine}
+      }
     }
     end
     {
