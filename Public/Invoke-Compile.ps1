@@ -13,11 +13,15 @@ function Invoke-Compile
     (
       [String]$Path
     )
-      Set-Location -Path ($Path -replace '\\[a-zA-Z0-9]*\.ps1$')
-      $launchFile = Get-Content $Path
-      $launchFile = $launchFile |% { 
-        #Write-Verbose "Starting line $_"
-        $_ | Get-FileMarks 
-      }
-      $launchFile
+    Set-Location -Path ($Path -replace '\\[a-zA-Z0-9]*\.ps1$')
+    $launchFile = [pscustomobject]@{ Output = Get-Content $Path }
+
+    do {
+      $launchFile = $launchFile.Output | ForEach-Object { 
+        $_ | Get-FileMarks -Verbose
+      } 
+      Write-Verbose "$($launchFile.Matches)"
+    } while ($launchFile.Matches -gt 0)
+
+    $launchFile.Output
 }
