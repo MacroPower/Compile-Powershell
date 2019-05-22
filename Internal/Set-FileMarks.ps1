@@ -2,64 +2,41 @@ function Set-FileMarks
 {
   <#
     .Synopsis
-      Short description
-    .DESCRIPTION
-      Long description
-    .EXAMPLE
-      Example of how to use this cmdlet
+      Get instances where the file to be built is sourcing info in the module.
   #>
     [CmdletBinding()]
     Param
     (
-      [Parameter(ValueFromPipeline)][String]$InputLine,
-      $Type
+      [Parameter(ValueFromPipeline)][String]$InputLine
     )
     begin
     {
-
+      $numberOfMatches = 0
     }
     process
     {
-      $x = ($InputLine | Select-String -Pattern "(['`"].*?['`"])" -AllMatches).Matches.Value -replace "['`"]"
-      $x | ForEach-Object {
-        if ( Test-Path $_ -PathType Leaf ) {
-          Write-Verbose "Found a file here: $_"
-
-          $y = (Get-Content -Path $_ -Raw) 
-          $Path = $_
-          $rPath = $_ -replace '\\','\\'
-          switch ($Type) {
-            'Command' {
-              Write-Verbose "Replace a command with $Rpath because of $InputLine"
-              $r = "([ ]*)\(([ ]*)([ ]*[a-zA-Z]+-[a-zA-Z]+)(([ ]+)|([ ]+(-[Pp]ath)[ ]+))['`"]($rPath)['`"]([ ]*)\)\.ScriptBlock([ ]*)"
-              #Something I've done here isn't supported by -replace
-              $ss=Select-String -InputObject $InputLine -Pattern $r
-              (
-                $InputLine.replace($ss.Matches.Value,"{`n$y`n}")
-              ) -split "`r`n"
-              Break 
-            }
-            'Text' {
-              Write-Verbose "Replace text with $rPath because of $InputLine"
-              (
-                $InputLine -replace "([ ]*[a-zA-Z]+-[a-zA-Z]+)(([ ])|( (-[Pp]ath) ))['`"]($rPath)['`"]([ ]*)"," @'`n$y`n'@"
-              ) -split "`r`n"
-              Break
-            }
-            'Module' {
-              Write-Verbose "Replace module with $Path because of $InputLine"
-              (
-                Get-ModuleData -Path ($Path -replace '\\(?:.(?!\\))+$')
-              ) -split "`r`n"
-            }
-          }
-        } else {
-          $InputLine
+      switch -Regex ($InputLine) {
+        '.*Get-Command.*' { 
+          $out = $InputLine | Write-FileMarks -Type Command
+          $numberOfMatches++
+          ; Break
         }
+        '.*Get-Content.*' {
+          $out = $InputLine | Write-FileMarks -Type Text
+          $numberOfMatches++
+          ; Break
+        }
+        '.*Import-Module.*' {
+          $out = $InputLine | Write-FileMarks -Type Module
+          $numberOfMatches++
+          ; Break
+        }
+        default {$out = $InputLine}
       }
-    }
-    end
-    {
-
+      
+      [PSCustomObject]@{
+        Matches  = $numberOfMatches
+        Output   = $out
+      }
     }
 }

@@ -2,25 +2,23 @@ function Invoke-Compile
 {
   <#
     .Synopsis
-      Short description
+      Gathers together all files for conversion into a deployable script.
     .DESCRIPTION
-      Long description
+      Finds all references to external files, and places them into one output. This can be directed into a program such as PS2EXE.
     .EXAMPLE
-      Example of how to use this cmdlet
+      Invoke-Compile -Path 'C:\Scripts\run.ps1' | Out-File 'OneSingleScript.ps1'
   #>
     [CmdletBinding()]
     Param
     (
       [String]$Path
     )
+
     Set-Location -Path ($Path -replace '\\[a-zA-Z0-9]*\.ps1$')
     $launchFile = [pscustomobject]@{ Output = Get-Content $Path }
 
     do {
-      $launchFile = $launchFile.Output | ForEach-Object { 
-        $_ | Get-FileMarks -Verbose
-      } 
-      Write-Verbose "$($launchFile.Matches)"
+      $launchFile = $launchFile.Output | Set-FileMarks
     } while ($launchFile.Matches -gt 0)
 
     $launchFile.Output
