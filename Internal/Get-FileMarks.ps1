@@ -11,18 +11,34 @@ function Get-FileMarks
     )
     begin
     {
-      
+      $numberOfMatches = 0
     }
     process
     {
       switch -Regex ($InputLine) {
-        '.*Get-Command.*' { $InputLine | Set-FileMarks -Type Command; Break}
-        '.*Get-Content.*' { $InputLine | Set-FileMarks -Type Text; Break}
-        default {$InputLine}
+        '.*Get-Command.*' { 
+          $out = $InputLine | Set-FileMarks -Type Command
+          $numberOfMatches++
+          ; Break
+        }
+        '.*Get-Content.*' {
+          $out = $InputLine | Set-FileMarks -Type Text
+          $numberOfMatches++
+          ; Break
+        }
+        '.*Import-Module.*' {
+          $out = $InputLine | Set-FileMarks -Type Module
+          $numberOfMatches++
+          ; Break
+        }
+        default {$out = $InputLine}
       }
     }
     end
     {
-
+      return [PSCustomObject]@{
+        Matches  = $numberOfMatches
+        Output   = $out
+      }
     }
 }

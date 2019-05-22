@@ -9,16 +9,13 @@ function Get-ModuleData
     (
       [String]$Path
     )
-    begin
-    {
-
-    }
     process
     {
-
-    }
-    end
-    {
-
+      (Get-ChildItem -Path $Path -Recurse).FullName | Where-Object {$_ -like '*.ps1'} | ForEach-Object {
+        $fFile = (Get-Content $_).Trim() | Where-Object {-not [String]::IsNullOrWhiteSpace($_)}
+        if ( $fFile[0] -like '*function*' ) {
+          $fFile
+        }
+      }
     }
 }
