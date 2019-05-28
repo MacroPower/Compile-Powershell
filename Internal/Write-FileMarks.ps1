@@ -33,9 +33,15 @@ function Write-FileMarks
             }
             'Text' {
               Write-Verbose "Replace text with $rPath because of $InputLine"
-              (
-                $InputLine -replace "([ ]*[a-zA-Z]+-[a-zA-Z]+)(([ ])|( (-[Pp]ath) ))['`"]($rPath)['`"]([ ]*)"," @'`n$y`n'@"
-              ) -split "`r`n"
+              $r = "([ ]*[a-zA-Z]+-[a-zA-Z]+)(([ ])|( (-[Pp]ath) ))['`"]($rPath)['`"]([ ]*)"
+              if ( ($y.length) * 2 -lt 1mb ) {
+                (
+                  $InputLine -replace $r," @'`n$y`n'@"
+                ) -split "`r`n"
+              } else { 
+                Write-Verbose 'WOW! That is a large file!'
+                $InputLine -replace $r," @'`n$('I couldn''t handle this file, sorry :[')`n'@" 
+              }
               Break
             }
             'Module' {
