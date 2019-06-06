@@ -21,7 +21,7 @@ function Set-FileMarks
           $numberOfMatches++
           ; Break
         }
-        '.*Get-Content.*' {
+        '.*Get-Content((?!\$).)*$' {
           $out = $InputLine | Write-FileMarks -Type Text
           $numberOfMatches++
           ; Break
