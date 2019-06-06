@@ -13,7 +13,7 @@ function Get-ModuleData
     {
       (Get-ChildItem -Path $Path -Recurse).FullName | Where-Object {$_ -like '*.ps1'} | ForEach-Object {
         $fFile = (Get-Content $_).Trim() | Where-Object {-not [String]::IsNullOrWhiteSpace($_)}
-        if ( $fFile[0] -like '*function*' ) {
+        if ( $fFile[0] -like '*function*' -or $fFile[0] -like '*class*') {
           $fFile
         }
       }
